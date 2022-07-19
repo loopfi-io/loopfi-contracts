@@ -1,0 +1,138 @@
+[
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_baseAPY",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_proportion",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_base",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_total",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_staked",
+        "type": "uint256"
+      }
+    ],
+    "name": "getAPY",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "pure",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_baseAPY",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "_earmarker",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_stakeToken",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_stakingPool",
+        "type": "address"
+      }
+    ],
+    "name": "getAPY4",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_rewarder",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_recipient",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_earmarker",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_stakeToken",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_stakingPool",
+        "type": "address"
+      }
+    ],
+    "name": "getAPY5",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_rewarder",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_recipient",
+        "type": "address"
+      }
+    ],
+    "name": "getBaseAPY",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "_apy",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  }
+]

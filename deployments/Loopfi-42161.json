@@ -1,0 +1,45 @@
+{
+  "DF": {
+    "contract": "ERC20Mock",
+    "path": "contracts/mock/",
+    "address": "0xaE6aab43C4f3E0cea4Ab83752C278f8dEbabA689"
+  },
+  "proxyAdmin": {
+    "contract": "ProxyAdmin",
+    "path": "contracts/library/",
+    "address": "0x3650B69f86cB593f116el276C30666834336c0647"
+  },
+  "RewardDistributorImpl": {
+    "contract": "RewardDistributor",
+    "address": "0x6ccaD0C744e1e4C7EDe96a59862067879d88d571"
+  },
+  "rewardDistributor": {
+    "contract": "RewardDistributor",
+    "address": "0x11a2032Fa2f2Cb636bDe9C9d33E3807FD372bE06"
+  },
+  "lpf": {
+    "contract": "Loopfi",
+    "address": "0x2794F519523709658D967166a78C5C5ad4E0247e"
+  },
+  "booster": {
+    "contract": "BoosterL2",
+    "address": "0x47159D2c877b9608D7A194a041d01649fE984B38"
+  },
+  "pDF": {
+    "contract": "pDF",
+    "path": "contracts/pTokens/",
+    "address": "0x93FC1235119c554576D8AB23583371fc25B803ee"
+  },
+  "pDFStaking": {
+    "contract": "BaseRewardPool",
+    "address": "0x8aF6E2d167d2776abDC8a021c9D903111120817A"
+  },
+  "pDFExtraReward": {
+    "contract": "VirtualBalanceRewardPool",
+    "address": "0xCdA96E0ee957A15A69aA94c0Ad2FE576b3D9aF87"
+  },
+  "depositor": {
+    "contract": "DFDepositorL2",
+    "address": "0x60c467bD7ad8cBf963c4E52B115B3DDD296b5B89"
+  }
+}
