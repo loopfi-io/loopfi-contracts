@@ -1,8 +1,6 @@
 import { run } from "./helpers/context";
-import {
-  sendTransaction,
-  printTenderlyInsteadOfSend,
-} from "./helpers/transaction";
+import { sendTransaction, sendToTenderly } from "./helpers/transaction";
+import { loadJSON } from "./helpers/utils";
 
 let task = { name: "Loopfi" };
 
@@ -187,7 +185,7 @@ async function verifyAPY() {
 
     console.log("DF Apy is:", dfAPY.toString());
 
-    const lpfPrice = ethers.utils.parseEther("0.09986699948251183");
+    const lpfPrice = ethers.utils.parseEther("0.14");
     const dfPrice = ethers.utils.parseEther("0.038659676179898987");
     const lpfRewardRate = await task.contracts.pDFExtraReward.rewardRate();
     console.log("lpfRewardRate is: ", lpfRewardRate.toString());
@@ -267,33 +265,6 @@ async function checkIncentive() {
   }
 }
 
-async function claimAndLock() {
-  const data = "0x";
-
-  const [claimData] = task.contracts.depositor.interface.decodeFunctionData(
-    "multicall",
-    data
-  );
-
-  console.log(claimData);
-
-  const lockData = task.contracts.depositor.interface.encodeFunctionData(
-    "lockDF",
-    []
-  );
-
-  const claimAndLockData =
-    task.contracts.depositor.interface.encodeFunctionData("multicall", [
-      claimData[0],
-      lockData,
-    ]);
-  claimAndLockData.push(lockData);
-
-  console.log(claimAndLockData);
-
-  await task.contracts.depositor.multicall([...claimData, lockData]);
-}
-
 async function releaseDF() {
   const unlockData = task.contracts.depositor.interface.encodeFunctionData(
     "unlockDF",
@@ -325,9 +296,54 @@ async function releaseDF() {
   console.log(executeData);
 }
 
+async function claimAndLock() {
+  const proofInfo = await loadJSON("./2.json");
+
+  const claimData = proofInfo.map((info) =>
+    task.contracts.depositor.interface.encodeFunctionData("claimFunds", [
+      info.batchNum,
+      info.proof,
+      info.path,
+      info.l2Sender,
+      info.l1Dest,
+      info.l2Block,
+      info.l1Block,
+      info.timestamp,
+      info.amount,
+      info.calldataForL1,
+    ])
+  );
+
+  const lockData = task.contracts.depositor.interface.encodeFunctionData(
+    "lockDF",
+    []
+  );
+
+  await sendTransaction(task, "depositor", "multicall", [
+    [...claimData, lockData],
+  ]);
+}
+
+async function earmarkAndForward() {
+  const maxGas = 14343621;
+  const gasPriceBid = 139328;
+  const data =
+    "0x0000000000000000000000000000000000000000000000000000000728d1083c00000000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000000";
+  const ethVaue = "2029217585532";
+
+  await sendTransaction(task, "booster", "earmarkRewards", [0]);
+  // await sendTransaction(task, "booster", "earmarkAndForward", [
+  //   maxGas,
+  //   gasPriceBid,
+  //   data,
+  //   {
+  //     value: ethVaue,
+  //   },
+  // ]);
+}
+
 async function main() {
-  // printTenderlyInsteadOfSend(
-  //   "87dae1cb-0ee2-4ad4-9b98-f7cd1aa0d880",
+  // sendToTenderly(
   //   "0x16dd90836680631985351d80f8addf83a31d5eae"
   // );
 
@@ -339,7 +355,11 @@ async function main() {
 
   // await checkIncentive();
 
-  await releaseDF();
+  // await releaseDF();
+
+  // await claimAndLock();
+
+  await earmarkAndForward();
 }
 
 run(task, main);

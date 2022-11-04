@@ -33,6 +33,7 @@ async function saveDeployments(task) {
 
 export async function init(task) {
   const provider = getProvider();
+  task.provider = provider;
   const network = await provider.getNetwork();
   task.chainId = network.chainId;
   console.log(`Chain ID: ${network.chainId}`);

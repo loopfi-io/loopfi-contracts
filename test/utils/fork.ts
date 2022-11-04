@@ -7,11 +7,12 @@ let veDFInstance: Contract | undefined;
 let veDFManagerInstance: Contract | undefined;
 let chainId: ChainId;
 
-enum ChainId {
+export enum ChainId {
   INVALID = 0,
   MAINNET = 1,
   KOVAN = 42,
   HARDHAT = 31337,
+  OPTIMISM = 10,
 }
 
 interface ContractAddresses {
@@ -46,6 +47,12 @@ const addresses: Record<ChainId, ContractAddresses> = {
     VEDF: AddressZero,
     VEDF_MANAGER: AddressZero,
   },
+  [ChainId.OPTIMISM]: {
+    DF: AddressZero,
+    DF_WHALE: AddressZero,
+    VEDF: AddressZero,
+    VEDF_MANAGER: AddressZero,
+  },
 };
 
 export async function allocateDF(df: Contract, to: string, amount: BigNumber) {
@@ -73,7 +80,9 @@ export async function allocateDF(df: Contract, to: string, amount: BigNumber) {
 Get the chain id from the network provider even with a hardhat fork.
 */
 export async function initChainId() {
-  let _chainId = network.config.chainId;
+  let _chainId = (await ethers.provider.getNetwork()).chainId;
+
+  // return 1;
 
   // Handle the hardhat fork
   if (_chainId === 31337 && network.config.hasOwnProperty("forking")) {

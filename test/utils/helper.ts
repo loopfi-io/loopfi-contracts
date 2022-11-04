@@ -1,5 +1,9 @@
 const hre = require("hardhat");
 
+export function log(...args: any) {
+  if (process.env.LOG) console.log(...args);
+}
+
 // Simulate to mine new blocks.
 export async function increaseBlock(blockNumber: number) {
   while (blockNumber > 0) {
@@ -31,7 +35,7 @@ export async function getBlock() {
 // Get current timestamp.
 export async function getTimestamp() {
   const currentBlockNum = await getBlock();
-  const currentBlock = await hre.ethres.provider.getBlock(currentBlockNum);
+  const currentBlock = await hre.ethers.provider.getBlock(currentBlockNum);
   return currentBlock.timestamp;
 }
 

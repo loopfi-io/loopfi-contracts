@@ -1,9 +1,6 @@
 import { run } from "./helpers/context";
 import { deployContracts } from "./helpers/deploy";
-import {
-  sendTransaction,
-  printTenderlyInsteadOfSend,
-} from "./helpers/transaction";
+import { sendTransaction, sendToTenderly } from "./helpers/transaction";
 import { attachContractAtAdddress } from "./helpers/contract";
 
 const task = { name: "Loopfi" };

@@ -1,10 +1,16 @@
+import { sendTransaction as sendTransactionTenderly } from "./tenderly";
+import { sendTransaction as sendTransactionHardhat } from "./hardhat";
+
 const SEND = 0;
 const PRINT = 1;
 const PRINT_TENDERLY = 2;
+const SEND_TENDERLY = 3;
+const SEND_HARDHAT = 4;
 
-let sendOption = 0;
+let sendOption = SEND_HARDHAT;
 
-let tenderlyID, tenderlyFrom;
+let tenderlyID = 0; //process.env.TENDERLY_FORK_ID;
+let tenderlyFrom;
 
 export async function sendTransaction(task, target, method, args) {
   console.log(`Going to call ${target}.${method} with args: ${args}`);
@@ -18,10 +24,19 @@ export async function sendTransaction(task, target, method, args) {
       ...args
     );
 
-    if (sendOption === PRINT) {
-      console.log(`Transaction data:`, data);
-    } else {
-      printTenderly(data, tenderlyID, tenderlyFrom, task.chainId);
+    switch (sendOption) {
+      case PRINT:
+        console.log("Transaction data:", data);
+        break;
+      case PRINT_TENDERLY:
+        printTenderly(data, tenderlyID, tenderlyFrom, task.chainId);
+        break;
+      case SEND_TENDERLY:
+        await sendTransactionTenderly(data.to, tenderlyFrom, data.data);
+        break;
+      case SEND_HARDHAT:
+        await sendTransactionHardhat(data.to, task.signerAddr, data.data);
+        break;
     }
   }
 }
@@ -34,10 +49,13 @@ export function printTransactionInsteadOfSend() {
   sendOption = PRINT;
 }
 
-export function printTenderlyInsteadOfSend(id, from) {
+export function printTenderlyInsteadOfSend(from) {
   sendOption = PRINT_TENDERLY;
+  tenderlyFrom = from;
+}
 
-  tenderlyID = id;
+export function sendToTenderly(from) {
+  sendOption = SEND_TENDERLY;
   tenderlyFrom = from;
 }
 

@@ -1,9 +1,6 @@
 import { run } from "./helpers/context";
 import { deployContracts } from "./helpers/deploy";
-import {
-  sendTransaction,
-  printTenderlyInsteadOfSend,
-} from "./helpers/transaction";
+import { sendTransaction, sendToTenderly } from "./helpers/transaction";
 
 const task = { name: "Loopfi" };
 
@@ -116,8 +113,7 @@ async function deployAPYHelper() {
 async function coreConfig() {
   const info = deployInfo[network[task.chainId]];
 
-  // printTenderlyInsteadOfSend(
-  //   "2a4747ae-6095-4f2c-be2c-fcfaf5aae04f",
+  // sendToTenderly(
   //   "0x6b29b8af9AF126170513AE6524395E09025b214E"
   // );
 

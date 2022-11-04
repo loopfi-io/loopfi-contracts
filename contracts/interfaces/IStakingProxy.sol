@@ -9,5 +9,7 @@ interface IStakingProxy {
 
     function stake() external;
 
-    function distribute() external;
+    function distribute() external returns (uint256);
+
+    function distributeOther(address _token) external returns (uint256);
 }

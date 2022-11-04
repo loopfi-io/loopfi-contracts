@@ -23,7 +23,7 @@
     "address": "0x8aF6E2d167d2776abDC8a021c9D903111120817A"
   },
   "voter": {
-    "contract": "DFVoterProxy",
+    "contract": "DFVoterManager",
     "address": "0xCdA96E0ee957A15A69aA94c0Ad2FE576b3D9aF87"
   },
   "depositor": {
@@ -37,5 +37,9 @@
   "booster": {
     "contract": "Booster",
     "address": "0x10ae3C1ff769DacB12d74706E7DaaEc4bCCDD0BA"
+  },
+  "DFVoterManagerImpl": {
+    "contract": "DFVoterManager",
+    "address": "0xa429A439325b4Db976c20c3dD38aDE638c452B74"
   }
 }

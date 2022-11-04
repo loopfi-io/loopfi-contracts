@@ -1,0 +1,62 @@
+{
+  "velo": {
+    "contract": "ERC20Mock",
+    "path": "contracts/mock/",
+    "address": "0x3c8B650257cFb5f272f799F5e2b4e65093a11a05"
+  },
+  "veVELO": {
+    "contract": "IVotingEscrow",
+    "path": "contracts/velodrom/interfaces/velodrome/",
+    "address": "0x9c7305eb78a432ced5C4D14Cac27E8Ed569A2e26"
+  },
+  "USXDFLP": {
+    "contract": "ERC20Mock",
+    "path": "contracts/mock/",
+    "address": "0xf8eDF2Da8FcF610Cf77235D3F90CC110723159Aa"
+  },
+  "proxyAdmin": {
+    "contract": "ProxyAdmin",
+    "path": "contracts/library/",
+    "address": "0xCaba6cfd4C83E1806467d937842D18128f90C13b"
+  },
+  "VeDepositorImpl": {
+    "contract": "VeDepositor",
+    "path": "contracts/velodrom/",
+    "address": "0x4174FDB3807D5463e996e7C273B87bf322b8438f"
+  },
+  "veDepositor": {
+    "contract": "VeDepositor",
+    "path": "contracts/velodrom/",
+    "address": "0x045999103f084AC539aCd1c6De157cAa54d4Ca02"
+  },
+  "LpDepositorImpl": {
+    "contract": "LpDepositor",
+    "path": "contracts/velodrom/",
+    "address": "0x6fA4D572aaaCa121f90e32c7460c736cc033A281"
+  },
+  "lpDepositor": {
+    "contract": "LpDepositor",
+    "path": "contracts/velodrom/",
+    "address": "0x96E113F64f5188eeB4990f11254C443404E68E08"
+  },
+  "lpDepositToken": {
+    "contract": "LpDepositToken",
+    "path": "contracts/velodrom/",
+    "address": "0x68B0BB1711e0d86258Fc6982dE197c827749D91F"
+  },
+  "StakingRewardsImpl": {
+    "contract": "StakingRewards",
+    "path": "contracts/velodrom/",
+    "address": "0x3650B69f86cB593f116e276C30666834336c0647"
+  },
+  "pVeloStaking": {
+    "contract": "StakingRewards",
+    "path": "contracts/velodrom/",
+    "address": "0x11a2032Fa2f2Cb636bDe9C9d33E3807FD372bE06"
+  },
+  "treasuryFunds": {
+    "contract": "TreasuryFunds",
+    "path": "contracts/",
+    "address": "0xE80eb6E7CC0e076D01331EceF0e96ae66ec4b533"
+  }
+}

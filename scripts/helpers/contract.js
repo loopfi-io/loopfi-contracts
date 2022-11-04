@@ -92,9 +92,7 @@ export async function attachContractAtAdddress(
 ) {
   // Hardhat has this helper function
   if (typeof remix !== "object") {
-    return (await ethers.getContractFactory(name.split("@")[0])).attach(
-      address
-    );
+    return await ethers.getContractAt(name.split("@")[0], address);
   }
 
   const artifacts = await getArtifactsByName(name, path);

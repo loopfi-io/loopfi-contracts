@@ -26,5 +26,7 @@ interface IBaseRewardPool {
 
     function getReward(bool earmark) external returns (bool);
 
+    function rewardToken() external view returns (address);
+
     function earmarkRewards() external returns (uint256 _callIncentive);
 }

@@ -21,6 +21,19 @@ contract TreasuryFunds is Ownable {
         __Ownable_init();
     }
 
+    /**
+     * @dev To be compatible with `FeeDistributor` for velodrome strategy.
+     */
+    function depositFee(address _token, uint256 _amount)
+        external
+        returns (bool)
+    {
+        if (_amount > 0) {
+            IERC20(_token).safeTransferFrom(msg.sender, address(this), _amount);
+        }
+        return true;
+    }
+
     function withdrawTo(
         IERC20 _asset,
         uint256 _amount,

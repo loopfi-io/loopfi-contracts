@@ -1,4 +1,4 @@
-import { ethers, waffle, network } from "hardhat";
+import { ethers, waffle, network, tenderly } from "hardhat";
 import { getBlock, getTimestamp } from "./helper";
 import { MAX, AddressZero } from "./constants";
 import { BigNumber, Contract, Signer } from "ethers";
@@ -95,7 +95,7 @@ async function deployLiquidityMining(
   return { rewardDistributor, stakingPools };
 }
 
-export async function fixtureDefault() {
+export async function fixtureL1() {
   // Get all accounts
   const [owner, ...accounts] = await ethers.getSigners();
   const ownerAddress = await owner.getAddress();
@@ -143,7 +143,7 @@ export async function fixtureDefault() {
     "0x",
   ]);
 
-  const voter = voterImplFactory.attach(voterProxy.address);
+  const voter: Contract = voterImplFactory.attach(voterProxy.address);
   await voter.initialize(
     df.address, // _df
     veDFEscrow.address // _escrow
@@ -180,7 +180,7 @@ export async function fixtureDefault() {
   // Init lock in depositor contract.
   // FIXME: Transfer some DF into voter for the initial lock
   // Should check out the real work flow here
-  await faucetDF(df, voter.address, ethers.utils.parseEther("1000000"));
+  await faucetDF(df, voter.address, ethers.utils.parseEther("100"));
   // console.log(
   //   "balance of depositor:",
   //   (await df.balanceOf(voter.address)).toString()
@@ -203,6 +203,11 @@ export async function fixtureDefault() {
 
   await loopfi.addMinters([ownerAddress], [perminedAmount]);
 
+  await tenderly.persistArtifacts({
+    name: "DFVoteProxy",
+    address: voter.address,
+  });
+
   return {
     owner,
     accounts,
@@ -218,12 +223,13 @@ export async function fixtureDefault() {
     loopfi,
     arbBridge,
     boosterL2,
+    proxyAdmin,
   };
 }
 
 // NOTICE: just use all contracts from L1 to mock L2 to test.
 export async function fixtureL2() {
-  const results = await fixtureDefault();
+  const results = await loadFixture(fixtureL1);
   const { df, owner, accounts, depositor, boosterL2, loopfi, arbBridge } =
     results;
   const ownerAddress = await owner.getAddress();
@@ -270,7 +276,7 @@ export async function fixtureL2() {
   await depositorL2.approveX([df.address], [arbBridge.address], [MAX]);
 
   // Deploy lpf rewards pool
-  const lpfRewardPoolL2 = await deployContract("LPFRewardPool", [
+  const lpfRewardPoolL2 = await deployContract("legacyLPFRewardPool", [
     lpfL2.address, // stakingToken_
     df.address, // rewardToken_
     depositorL2.address, // dfDeposits_
@@ -340,6 +346,62 @@ export async function fixtureL2() {
 
   const apyHelperL2 = await deployContract("APYHelper", []);
 
+  // Get LPF staking contract.
+  const LPFStaking = await deployContract("LPFRewardPool", [
+    loopfi.address, // stakingToken_
+    df.address, // rewardToken_
+    depositorL2.address, // crvDeposits_
+    stakingPoolL2.address, // cvxCrvRewards_
+    pDFL2.address, // cvxCrvToken_
+    await owner.getAddress(), // operator_
+    await owner.getAddress(), // rewardManager_
+  ]);
+
+  // Deploy VirtualBalanceWrapper contract as extra rewards.
+  const LPFVirtualRewardPool = await deployContract(
+    "VirtualBalanceRewardPool",
+    [
+      LPFStaking.address, // deposit_
+      lpfL2.address, // rewardToken_
+    ]
+  );
+
+  // Add extra reward.
+  LPFStaking.addExtraReward(LPFVirtualRewardPool.address);
+
+  // Deploy LPF locker contract
+  const locker = await deployContract("LpfLocker", [
+    loopfi.address, // _stakingToken
+    pDFL2.address, // _cvxCrv
+    stakingPoolL2.address, // _cvxcrvStaking
+  ]);
+
+  const LPFStakingProxy = await deployContract("CvxStakingProxy", [
+    locker.address, // _rewards
+    df.address, // _crv
+    loopfi.address, // _cvx
+    pDFL2.address, // _cvxCrv
+    LPFStaking.address, // _cvxStaking
+    stakingPoolL2.address, // _cvxCrvStaking
+    depositorL2.address, // _crvDeposit
+  ]);
+
+  // Make approval in LPF staking contract.
+  await LPFStakingProxy.setApprovals();
+
+  // Set staking contract in LPF Locker contract.
+  await locker.setStakingContract(LPFStakingProxy.address);
+
+  // Add default reward token in LPF Locker contract..
+  await locker.addReward(
+    pDFL2.address, // _rewardsToken
+    LPFStakingProxy.address, // _distributor
+    true // _useBoost
+  );
+
+  // Distribute for the first epoch
+  // await lpfL2.mint(locker.address, ethers.utils.parseEther("10000"));
+
   return {
     ...results,
     chef,
@@ -355,7 +417,60 @@ export async function fixtureL2() {
     pDFDFPairL2,
     rewardDistributorL2,
     lpStakingPoolsL2,
+    locker,
+    LPFStaking,
+    LPFVirtualRewardPool,
+    LPFStakingProxy,
   };
+}
+
+export async function fixtureVoteManager() {
+  let results = await loadFixture(fixtureL2);
+
+  const { proxyAdmin, df, voter, veDFEscrow } = results;
+
+  results.voter = await upgradeToVoterManager(
+    proxyAdmin,
+    voter,
+    df,
+    veDFEscrow
+  );
+
+  return results;
+}
+
+export async function fixtureDefault() {
+  return loadFixture(fixtureVoteManager);
+}
+
+async function upgradeToVoterManager(
+  proxyAdmin: Contract,
+  voter: Contract,
+  df: Contract,
+  veDFEscrow: Contract
+) {
+  const voterMaxBalance = ethers.utils.parseEther("1000");
+
+  const voterManager = await deployContract("DFVoterManager", [
+    df.address,
+    veDFEscrow.address,
+    voterMaxBalance,
+  ]);
+
+  const upgradeData = voterManager.interface.encodeFunctionData(
+    "upgrade(uint256)",
+    [voterMaxBalance]
+  );
+
+  await proxyAdmin.upgradeAndCall(
+    voter.address,
+    voterManager.address,
+    upgradeData
+  );
+
+  voter = await ethers.getContractAt("DFVoterManager", voter.address);
+
+  return voter;
 }
 
 export async function earmarkAndForwardRewards(booster: Contract) {

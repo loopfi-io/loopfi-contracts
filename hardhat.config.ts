@@ -8,6 +8,9 @@ import "hardhat-gas-reporter";
 import "solidity-coverage";
 import "hardhat-abi-exporter";
 
+import * as tdly from "@tenderly/hardhat-tenderly";
+// tdly.setup();
+
 dotenv.config();
 
 // This is a sample Hardhat task. To learn how to create your own go to
@@ -24,11 +27,18 @@ task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
 // Go to https://hardhat.org/config/ to learn more
 
 const config: HardhatUserConfig = {
+  mocha: {
+    timeout: 2000000,
+  },
   networks: {
     hardhat: {
       forking: {
-        url: "https://eth-mainnet.alchemyapi.io/v2/" + process.env.ALCHEMY_KEY,
-        blockNumber: 14563247,
+        // url: "https://eth-mainnet.alchemyapi.io/v2/" + process.env.ALCHEMY_KEY,
+        // blockNumber: 15209978,
+        url: "https://opt-mainnet.g.alchemy.com/v2/" + process.env.ALCHEMY_KEY,
+        blockNumber: 23095000,
+        //   // url: "https://eth-kovan.alchemyapi.io/v2/PxsXj0GV165_KYcXXvntiGzEUhYFHIOr",
+        //   // blockNumber: 31274187,
       },
     },
     "truffle-dashboard": {
@@ -58,11 +68,27 @@ const config: HardhatUserConfig = {
         process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
       gas: 8000000,
     },
+    dforcefork: {
+      url: "https://rpc.dforce.network/9007/",
+      accounts:
+        process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+      gas: 8000000,
+      timeout: 500000,
+    },
   },
   solidity: {
     compilers: [
       {
         version: "0.6.12",
+        settings: {
+          optimizer: {
+            enabled: true,
+            runs: 200,
+          },
+        },
+      },
+      {
+        version: "0.8.11",
         settings: {
           optimizer: {
             enabled: true,
@@ -91,6 +117,17 @@ const config: HardhatUserConfig = {
       "APYHelper",
       "ILPFMasterChef",
       "ILPFRewardPool",
+      "ISdlDepositor",
+      "ISdlBaseRewardPool",
+      "ISdlBooster",
+      "ILockedCvx",
+      "IStakingProxy",
+      "ISnapshotDelegate",
+      // Velodrome
+      "VeDepositor",
+      "StakingRewards",
+      "LpDepositor",
+      "TokenLocker",
     ],
     spacing: 2,
     pretty: false,

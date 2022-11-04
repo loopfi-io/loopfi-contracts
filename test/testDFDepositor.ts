@@ -265,8 +265,11 @@ describe("Depositor", function () {
       // console.log("earmarker", diffEarmarker.toString());
       // console.log("boosterL2", diffBoosterL2.toString());
 
-      expect(diffTreasury).to.equal(
-        reward.mul(platformFee).div(FEE_DENOMINATOR)
+      const expectTreasury = reward.mul(platformFee).div(FEE_DENOMINATOR);
+      const allowedDelta = chainId === 31337 ? 0 : 10;
+      expect(diffTreasury).to.closeTo(
+        expectTreasury,
+        expectTreasury.mul(allowedDelta).div(10000)
       );
       expect(diffEarmarker).to.equal(0);
       expect(diffBoosterL2).to.equal(0);
@@ -413,14 +416,23 @@ describe("Depositor", function () {
       "function transferFrom(address from, address to, uint amount)",
     ]);
     await network.provider.send("evm_setAutomine", [false]);
-    // only for local test.
-    const beforeveDFBalance = await veDFEscrow.balanceOf(voter.address);
-    const beforeTreasuryDFBalance = await df.balanceOf(treasury.address);
 
+    const beforeveDFBalance = await veDFEscrow.balanceOf(voter.address);
+    // console.log(beforeveDFBalance.toString());
+
+    const beforeTreasuryDFBalance = await df.balanceOf(treasury.address);
     expect(beforeveDFBalance).to.gt(0);
 
+    // Wait for the lock to expire
+    const FOUR_YEARS = 60 * 60 * 24 * 365 * 4;
+    await increaseTime(FOUR_YEARS);
+    await increaseBlock(1);
+
+    // const reward = await veDFEscrow.callStatic.earnedInOne(voter.address);
+    // console.log(reward.toString());
+
     // Unlock DF in veDF manager.
-    await depositor.unlockDF();
+    await depositor.unlockDF({ gasLimit: 10000000 });
     // // Voter proxy make appraval to treasury contract.
     await voter.approveX([df.address], [treasury.address], [MAX]);
     // Withdraw DF from treasury.

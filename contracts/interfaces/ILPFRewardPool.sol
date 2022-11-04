@@ -19,4 +19,8 @@ interface ILPFRewardPool {
     function withdrawAll(bool claim) external;
 
     function getReward(bool _stake) external;
+
+    function extraRewardsLength() external view returns (uint256);
+
+    function extraRewards(uint256 index) external view returns (address);
 }

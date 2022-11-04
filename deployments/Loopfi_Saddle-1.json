@@ -1,0 +1,98 @@
+{
+  "proxyAdmin": {
+    "contract": "ProxyAdmin",
+    "path": "contracts/library/",
+    "address": "0xCaba6cfd4C83E1806467d937842D18128f90C13b"
+  },
+  "lpf": {
+    "contract": "Loopfi",
+    "address": "0x3650B69f86cB593f116e276C30666834336c0647"
+  },
+  "DF": {
+    "contract": "ERC20Mock",
+    "path": "contracts/mock/",
+    "address": "0x431ad2ff6a9C365805eBaD47Ee021148d6f7DBe0"
+  },
+  "treasury": {
+    "contract": "TreasuryFunds",
+    "address": "0x2E3499Db9bFC793924083B2d771CfC19863ca62C"
+  },
+  "pSDL": {
+    "contract": "pSDL",
+    "path": "contracts/saddle/",
+    "address": "0xC1B4dA8f275E9c74b67f170Cd5aa0bee82d4B5E0"
+  },
+  "voter": {
+    "contract": "SdlVoterProxy",
+    "path": "contracts/saddle/",
+    "address": "0x6E399F1d376237aE705DD015894fC3FB559521b4"
+  },
+  "depositor": {
+    "contract": "SdlDepositor",
+    "path": "contracts/saddle/",
+    "address": "0xC64Cb881380Fb53944f6Fc24aC5348De23001633"
+  },
+  "booster": {
+    "contract": "SdlBooster",
+    "path": "contracts/saddle/",
+    "address": "0xbfd627aCC830B613A12e98e58d89839B1B4A56D4"
+  },
+  "pSDLStaking": {
+    "contract": "SdlBaseRewardPool",
+    "path": "contracts/saddle/",
+    "address": "0x8599657221E5495630B35A655F42cf978bd64c7B"
+  },
+  "pSDLExtraReward": {
+    "contract": "VirtualBalanceRewardPool",
+    "address": "0xBDd5A48427EB1A57d00c92441ECf3109192D94A7"
+  },
+  "proxyFactory": {
+    "contract": "ProxyFactory",
+    "path": "contracts/saddle/",
+    "address": "0x488A68953e06fc5AA462557e6c213a908a5Abd95"
+  },
+  "tokenFactory": {
+    "contract": "TokenFactory",
+    "path": "contracts/saddle/",
+    "address": "0xb2f344e6bfa63CeF606d126dDb75916b1F6A2155"
+  },
+  "rewardFactory": {
+    "contract": "RewardFactory",
+    "path": "contracts/saddle/",
+    "address": "0xdBeF4388927e6C0883BE6f642C8c273F407C5191"
+  },
+  "stashFactory": {
+    "contract": "StashFactoryV2",
+    "path": "contracts/saddle/",
+    "address": "0x3e28F61A770Fa8806bceEF206DD3176a2Bb14D06"
+  },
+  "stashRewardV3": {
+    "contract": "ExtraRewardStashV3",
+    "path": "contracts/saddle/",
+    "address": "0xE5098FEcee6FF001Dfbff586FaCfD6e34F35b837"
+  },
+  "LPFStaking": {
+    "contract": "LPFRewardPool",
+    "address": "0x7477004e5170B65a137bCc5D954703a1C0D09eEb"
+  },
+  "locker": {
+    "contract": "LpfLocker",
+    "address": "0x74F55c24f07FDE50AFf00f4Ef027d1561C17C619"
+  },
+  "LPFStakingProxy": {
+    "contract": "LpfStakingProxy",
+    "address": "0x1503e9C2860c68930C64B16918B82a2f70B0eaCa"
+  },
+  "RewardDistributorImpl": {
+    "contract": "RewardDistributor",
+    "address": "0x989960D0C6dFBbe4fc9594ffbfcE00E97BB6181c"
+  },
+  "rewardDistributor": {
+    "contract": "RewardDistributor",
+    "address": "0x03163e25EAE1599fF84e6142238929967e118E9F"
+  },
+  "LPFUSXStaking": {
+    "contract": "StakingPool",
+    "address": "0xDCa2cA29dc5710fB03A8db7E8B039d2847B69565"
+  }
+}

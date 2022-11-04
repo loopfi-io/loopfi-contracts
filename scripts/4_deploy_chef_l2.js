@@ -1,12 +1,9 @@
 import { run } from "./helpers/context";
 import { deployContracts } from "./helpers/deploy";
-import {
-  sendTransaction,
-  printTenderlyInsteadOfSend,
-} from "./helpers/transaction";
+import { sendTransaction, sendToTenderly } from "./helpers/transaction";
 import { attachContractAtAdddress } from "./helpers/contract";
 
-const task = { name: "Loopfi" };
+const task = { name: "Loopfi_Saddle" };
 
 const network = {
   1: "mainnet",
@@ -24,24 +21,24 @@ const deployInfo = {
     verifyAmount: ethers.utils.parseEther("1000"), // 1000
     liquidityAmount: ethers.utils.parseEther("10000000"), // 10,000,000
     pools: {
-      pDFDF: {
-        // address: "",
-        // 1mil per year
-        rewardRate: ethers.utils.parseEther("6849.3").div(24 * 3600),
-        // startTime: 1654784159,
-      },
+      // pDFDF: {
+      //   // address: "",
+      //   // 1mil per year
+      //   rewardRate: ethers.utils.parseEther("6849.3").div(24 * 3600),
+      //   // startTime: 1654784159,
+      // },
       LPFUSX: {
-        // address: "",
+        address: "0xed4DD6aeAeCFC4d289A9578db12100b9a247DF2F",
         // 1mil per year
-        rewardRate: ethers.utils.parseEther("4109.6").div(24 * 3600),
-        // startTime: 1654784159,
+        rewardRate: 0,
+        startTime: 1661850000,
       },
-      lpf: {
-        // address: "",
-        // 1mil per year
-        rewardRate: ethers.utils.parseEther("2739.7").div(24 * 3600),
-        // startTime: 1654784159,
-      },
+      // lpf: {
+      //   // address: "",
+      //   // 1mil per year
+      //   rewardRate: ethers.utils.parseEther("2739.7").div(24 * 3600),
+      //   // startTime: 1654784159,
+      // },
     },
   },
   kovan: {
@@ -217,8 +214,7 @@ async function coreConfig() {
 
 async function addLPPools() {
   const info = deployInfo[network[task.chainId]];
-  // printTenderlyInsteadOfSend(
-  //   "2a4747ae-6095-4f2c-be2c-fcfaf5aae04f",
+  // sendToTenderly(
   //   "0x6b29b8af9AF126170513AE6524395E09025b214E"
   // );
 
@@ -261,7 +257,7 @@ async function main() {
 
   await deployCore();
 
-  await coreConfig();
+  // await coreConfig();
 
   await addLPPools();
 }

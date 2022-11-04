@@ -3,7 +3,7 @@ import { Signer, Contract } from "ethers";
 import { AddressZero, MAX } from "./utils/constants";
 import { loadFixture, fixtureL2 } from "./utils/fixtures";
 
-describe("APYHelper", function () {
+describe.skip("APYHelper", function () {
   let accounts: Signer[];
   let df: Contract;
   let depositorL2: Contract;

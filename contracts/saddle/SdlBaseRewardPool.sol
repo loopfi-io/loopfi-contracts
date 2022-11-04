@@ -1,5 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.6.12;
+/**
+ *Submitted for verification at Etherscan.io on 2020-07-17
+ */
 
 /*
    ____            __   __        __   _
@@ -7,7 +10,8 @@ pragma solidity 0.6.12;
  _\ \ / // // _ \/ __// _ \/ -_)/ __// / \ \ /
 /___/ \_, //_//_/\__//_//_/\__/ \__//_/ /_\_\
      /___/
-* Synthetix: lpfRewardPool.sol
+
+* Synthetix: BaseRewardPool.sol
 *
 * Docs: https://docs.synthetix.io/
 *
@@ -35,29 +39,25 @@ pragma solidity 0.6.12;
 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 */
 
-import "../Interfaces.sol";
-import "../library/MathUtil.sol";
-import "../library/Ownable.sol";
+import "./Interfaces.sol";
+import "../interfaces/MathUtil.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 
-contract LPFRewardPool is Ownable {
-    using SafeERC20 for IERC20;
+contract SdlBaseRewardPool {
     using SafeMath for uint256;
+    using SafeERC20 for IERC20;
 
-    IERC20 public immutable rewardToken;
-    IERC20 public immutable stakingToken;
+    IERC20 public rewardToken;
+    IERC20 public stakingToken;
     uint256 public constant duration = 7 days;
-    uint256 public constant FEE_DENOMINATOR = 10000;
 
-    address public immutable operator;
-    address public immutable dfDeposits;
-    address public immutable pDFRewards;
-    IERC20 public immutable pDFToken;
-    address public immutable rewardManager;
+    address public operator;
+    address public rewardManager;
 
+    uint256 public pid;
     uint256 public periodFinish = 0;
     uint256 public rewardRate = 0;
     uint256 public lastUpdateTime;
@@ -67,9 +67,9 @@ contract LPFRewardPool is Ownable {
     uint256 public historicalRewards = 0;
     uint256 public constant newRewardRatio = 830;
     uint256 private _totalSupply;
-    mapping(address => uint256) private _balances;
     mapping(address => uint256) public userRewardPerTokenPaid;
     mapping(address => uint256) public rewards;
+    mapping(address => uint256) private _balances;
 
     address[] public extraRewards;
 
@@ -78,62 +78,18 @@ contract LPFRewardPool is Ownable {
     event Withdrawn(address indexed user, uint256 amount);
     event RewardPaid(address indexed user, uint256 reward);
 
-    /**
-     * @param stakingToken_ velo token
-     * @param rewardToken_ df token
-     * @param dfDeposits_ depositorL2
-     * @param pDFRewards_ baseRewardPool
-     * @param pDFToken_ pDFToken
-     * @param operator_ boosterL2
-     * @param rewardManager_ reward manager
-     */
     constructor(
+        uint256 pid_,
         address stakingToken_,
         address rewardToken_,
-        address dfDeposits_,
-        address pDFRewards_,
-        address pDFToken_,
         address operator_,
         address rewardManager_
     ) public {
-        __Ownable_init();
-
+        pid = pid_;
         stakingToken = IERC20(stakingToken_);
         rewardToken = IERC20(rewardToken_);
         operator = operator_;
         rewardManager = rewardManager_;
-        dfDeposits = dfDeposits_;
-        pDFRewards = pDFRewards_;
-        pDFToken = IERC20(pDFToken_);
-
-        // Make necessary approval.
-        IERC20[] memory _tokens = new IERC20[](2);
-        address[] memory _recipients = new address[](2);
-        uint256[] memory _amounts = new uint256[](2);
-
-        _tokens[0] = IERC20(rewardToken_);
-        _recipients[0] = dfDeposits_;
-        _amounts[0] = uint256(-1);
-
-        _tokens[1] = IERC20(pDFToken_);
-        _recipients[1] = pDFRewards_;
-        _amounts[1] = uint256(-1);
-
-        approveX(_tokens, _recipients, _amounts);
-    }
-
-    function approveX(
-        IERC20[] memory _tokens,
-        address[] memory  _recipients,
-        uint256[] memory _amounts
-    ) public onlyOwner {
-        require(
-            _tokens.length == _recipients.length && _tokens.length == _amounts.length,
-            "approveX: The length of input parameters does not match!"
-        );
-        for (uint256 i = 0; i < _tokens.length; i++) {
-            _tokens[i].safeApprove(_recipients[i], _amounts[i]);
-        }
     }
 
     function totalSupply() public view returns (uint256) {
@@ -148,11 +104,12 @@ contract LPFRewardPool is Ownable {
         return extraRewards.length;
     }
 
-    function addExtraReward(address _reward) external {
+    function addExtraReward(address _reward) external returns (bool) {
         require(msg.sender == rewardManager, "!authorized");
         require(_reward != address(0), "!reward setting");
 
         extraRewards.push(_reward);
+        return true;
     }
 
     function clearExtraRewards() external {
@@ -164,7 +121,7 @@ contract LPFRewardPool is Ownable {
         rewardPerTokenStored = rewardPerToken();
         lastUpdateTime = lastTimeRewardApplicable();
         if (account != address(0)) {
-            rewards[account] = earnedReward(account);
+            rewards[account] = earned(account);
             userRewardPerTokenPaid[account] = rewardPerTokenStored;
         }
         _;
@@ -175,8 +132,7 @@ contract LPFRewardPool is Ownable {
     }
 
     function rewardPerToken() public view returns (uint256) {
-        uint256 supply = totalSupply();
-        if (supply == 0) {
+        if (totalSupply() == 0) {
             return rewardPerTokenStored;
         }
         return
@@ -185,11 +141,11 @@ contract LPFRewardPool is Ownable {
                     .sub(lastUpdateTime)
                     .mul(rewardRate)
                     .mul(1e18)
-                    .div(supply)
+                    .div(totalSupply())
             );
     }
 
-    function earnedReward(address account) internal view returns (uint256) {
+    function earned(address account) public view returns (uint256) {
         return
             balanceOf(account)
                 .mul(rewardPerToken().sub(userRewardPerTokenPaid[account]))
@@ -197,119 +153,138 @@ contract LPFRewardPool is Ownable {
                 .add(rewards[account]);
     }
 
-    function earned(address account) external view returns (uint256) {
-        uint256 depositFeeRate = IDFDeposit(dfDeposits).lockIncentive();
-
-        uint256 r = earnedReward(account);
-        uint256 fees = r.mul(depositFeeRate).div(FEE_DENOMINATOR);
-
-        //fees dont apply until whitelist+veDF lock begins so will report
-        //slightly less value than what is actually received.
-        return r.sub(fees);
-    }
-
-    function stake(uint256 _amount) public updateReward(msg.sender) {
+    function stake(uint256 _amount)
+        public
+        updateReward(msg.sender)
+        returns (bool)
+    {
         require(_amount > 0, "RewardPool : Cannot stake 0");
 
         //also stake to linked rewards
-        uint256 length = extraRewards.length;
-        for (uint256 i = 0; i < length; i++) {
+        for (uint256 i = 0; i < extraRewards.length; i++) {
             IRewards(extraRewards[i]).stake(msg.sender, _amount);
         }
 
-        //add supply
         _totalSupply = _totalSupply.add(_amount);
-        //add to sender balance sheet
         _balances[msg.sender] = _balances[msg.sender].add(_amount);
-        //take tokens from sender
-        stakingToken.safeTransferFrom(msg.sender, address(this), _amount);
 
+        stakingToken.safeTransferFrom(msg.sender, address(this), _amount);
         emit Staked(msg.sender, _amount);
+
+        return true;
     }
 
-    function stakeAll() external {
+    function stakeAll() external returns (bool) {
         uint256 balance = stakingToken.balanceOf(msg.sender);
         stake(balance);
+        return true;
     }
 
-    function stakeFor(address _for, uint256 _amount) public updateReward(_for) {
+    function stakeFor(address _for, uint256 _amount)
+        public
+        updateReward(_for)
+        returns (bool)
+    {
         require(_amount > 0, "RewardPool : Cannot stake 0");
 
         //also stake to linked rewards
-        uint256 length = extraRewards.length;
-        for (uint256 i = 0; i < length; i++) {
+        for (uint256 i = 0; i < extraRewards.length; i++) {
             IRewards(extraRewards[i]).stake(_for, _amount);
         }
 
-        //add supply
+        //give to _for
         _totalSupply = _totalSupply.add(_amount);
-        //add to _for's balance sheet
         _balances[_for] = _balances[_for].add(_amount);
-        //take tokens from sender
-        stakingToken.safeTransferFrom(msg.sender, address(this), _amount);
 
-        emit Staked(msg.sender, _amount);
+        //take away from sender
+        stakingToken.safeTransferFrom(msg.sender, address(this), _amount);
+        emit Staked(_for, _amount);
+
+        return true;
     }
 
-    function withdraw(uint256 _amount, bool claim)
+    function withdraw(uint256 amount, bool claim)
         public
         updateReward(msg.sender)
+        returns (bool)
     {
-        require(_amount > 0, "RewardPool : Cannot withdraw 0");
+        require(amount > 0, "RewardPool : Cannot withdraw 0");
 
         //also withdraw from linked rewards
-        uint256 length = extraRewards.length;
-        for (uint256 i = 0; i < length; i++) {
-            IRewards(extraRewards[i]).withdraw(msg.sender, _amount);
+        for (uint256 i = 0; i < extraRewards.length; i++) {
+            IRewards(extraRewards[i]).withdraw(msg.sender, amount);
         }
 
-        _totalSupply = _totalSupply.sub(_amount);
-        _balances[msg.sender] = _balances[msg.sender].sub(_amount);
-        stakingToken.safeTransfer(msg.sender, _amount);
-        emit Withdrawn(msg.sender, _amount);
+        _totalSupply = _totalSupply.sub(amount);
+        _balances[msg.sender] = _balances[msg.sender].sub(amount);
+
+        stakingToken.safeTransfer(msg.sender, amount);
+        emit Withdrawn(msg.sender, amount);
 
         if (claim) {
-            getReward(msg.sender, true, false);
+            getReward(msg.sender, true);
         }
+
+        return true;
     }
 
     function withdrawAll(bool claim) external {
         withdraw(_balances[msg.sender], claim);
     }
 
-    function getReward(
-        address _account,
-        bool _claimExtras,
-        bool _stake
-    ) public updateReward(_account) {
-        uint256 reward = earnedReward(_account);
+    function withdrawAndUnwrap(uint256 amount, bool claim)
+        public
+        updateReward(msg.sender)
+        returns (bool)
+    {
+        //also withdraw from linked rewards
+        for (uint256 i = 0; i < extraRewards.length; i++) {
+            IRewards(extraRewards[i]).withdraw(msg.sender, amount);
+        }
 
+        _totalSupply = _totalSupply.sub(amount);
+        _balances[msg.sender] = _balances[msg.sender].sub(amount);
+
+        //tell operator to withdraw from here directly to user
+        IDeposit(operator).withdrawTo(pid, amount, msg.sender);
+        emit Withdrawn(msg.sender, amount);
+
+        //get rewards too
+        if (claim) {
+            getReward(msg.sender, true);
+        }
+        return true;
+    }
+
+    function withdrawAllAndUnwrap(bool claim) external {
+        withdrawAndUnwrap(_balances[msg.sender], claim);
+    }
+
+    function getReward(address _account, bool _claimExtras)
+        public
+        updateReward(_account)
+        returns (bool)
+    {
+        uint256 reward = earned(_account);
         if (reward > 0) {
             rewards[_account] = 0;
-
-            IDFDeposit(dfDeposits).deposit(reward, false);
-
-            uint256 pDFBalance = pDFToken.balanceOf(address(this));
-            if (_stake) {
-
-                IRewards(pDFRewards).stakeFor(_account, pDFBalance);
-            } else {
-                pDFToken.safeTransfer(_account, pDFBalance);
-            }
-            emit RewardPaid(_account, pDFBalance);
+            rewardToken.safeTransfer(_account, reward);
+            IDeposit(operator).rewardClaimed(pid, _account, reward);
+            emit RewardPaid(_account, reward);
         }
 
         //also get rewards from linked rewards
         if (_claimExtras) {
-            uint256 length = extraRewards.length;
-            for (uint256 i = 0; i < length; i++) {
+            for (uint256 i = 0; i < extraRewards.length; i++) {
                 IRewards(extraRewards[i]).getReward(_account);
             }
         }
+        return true;
     }
 
-    function getReward(bool _stake) external {
-        getReward(msg.sender, true, _stake);
+    function getReward() external returns (bool) {
+        getReward(msg.sender, true);
+        return true;
     }
 
     function donate(uint256 _amount) external returns (bool) {
@@ -321,7 +296,7 @@ contract LPFRewardPool is Ownable {
         queuedRewards = queuedRewards.add(_amount);
     }
 
-    function queueNewRewards(uint256 _rewards) external {
+    function queueNewRewards(uint256 _rewards) external returns (bool) {
         require(msg.sender == operator, "!authorized");
 
         _rewards = _rewards.add(queuedRewards);
@@ -329,7 +304,7 @@ contract LPFRewardPool is Ownable {
         if (block.timestamp >= periodFinish) {
             notifyRewardAmount(_rewards);
             queuedRewards = 0;
-            return;
+            return true;
         }
 
         //et = now - (finish-duration)
@@ -337,12 +312,15 @@ contract LPFRewardPool is Ownable {
         //current at now: rewardRate * elapsedTime
         uint256 currentAtNow = rewardRate * elapsedTime;
         uint256 queuedRatio = currentAtNow.mul(1000).div(_rewards);
+
+        //uint256 queuedRatio = currentRewards.mul(1000).div(_rewards);
         if (queuedRatio < newRewardRatio) {
             notifyRewardAmount(_rewards);
             queuedRewards = 0;
         } else {
             queuedRewards = _rewards;
         }
+        return true;
     }
 
     function notifyRewardAmount(uint256 reward)
